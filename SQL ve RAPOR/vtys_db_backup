@@ -1,0 +1,2576 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 15.1
+-- Dumped by pg_dump version 15.1
+
+-- Started on 2022-12-28 01:42:18
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 268 (class 1255 OID 16591)
+-- Name: calisan_ekle(text, text, text, text, integer); Type: PROCEDURE; Schema: public; Owner: postgres
+--
+
+CREATE PROCEDURE public.calisan_ekle(IN p1 text, IN p2 text, IN p3 text, IN p4 text, IN p5 integer)
+    LANGUAGE sql
+    AS $$
+insert into calisan_list (ad,soyad,kullaniciad,sifre,seviyeid,yetki_id) values (p1,p2,p3,p4,0,p5);
+$$;
+
+
+ALTER PROCEDURE public.calisan_ekle(IN p1 text, IN p2 text, IN p3 text, IN p4 text, IN p5 integer) OWNER TO postgres;
+
+--
+-- TOC entry 251 (class 1255 OID 16646)
+-- Name: deleteuye(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.deleteuye() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  DELETE FROM seviyeli_uyeler
+  WHERE seviyeli_uyeler.kullanici_id = OLD.id;
+  RETURN NEW;
+END
+$$;
+
+
+ALTER FUNCTION public.deleteuye() OWNER TO postgres;
+
+--
+-- TOC entry 246 (class 1255 OID 16665)
+-- Name: deleteyemek(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.deleteyemek() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  DELETE FROM yemek_kategori
+  WHERE yemek_kategori.yemek_id = OLD.id;
+  RETURN OLD;
+END
+$$;
+
+
+ALTER FUNCTION public.deleteyemek() OWNER TO postgres;
+
+--
+-- TOC entry 247 (class 1255 OID 16608)
+-- Name: getistenilenyorum(smallint); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.getistenilenyorum(pr1 smallint) RETURNS TABLE(yorumid smallint, yorumu character varying, yorumdurummu smallint)
+    LANGUAGE plpgsql
+    AS $$
+Begin
+	Return Query
+	Select
+	id,
+	yorum,
+	yorum_durum
+  From
+	yorumlar
+  Where
+  yorum_durum = pr1;
+End;
+$$;
+
+
+ALTER FUNCTION public.getistenilenyorum(pr1 smallint) OWNER TO postgres;
+
+--
+-- TOC entry 255 (class 1255 OID 16667)
+-- Name: indirimsizfiyat(double precision, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.indirimsizfiyat(tutar double precision, discount integer) RETURNS double precision
+    LANGUAGE plpgsql
+    AS $$
+begin
+tutar = (100*tutar) / (100-discount);
+return tutar;
+end;
+$$;
+
+
+ALTER FUNCTION public.indirimsizfiyat(tutar double precision, discount integer) OWNER TO postgres;
+
+--
+-- TOC entry 248 (class 1255 OID 16612)
+-- Name: istenilenseviyeliuyeler(smallint); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.istenilenseviyeliuyeler(pr1 smallint) RETURNS TABLE(kullaniciid smallint, kullaniciadi character varying, kullanicisoyadi character varying, seviyeidsi smallint)
+    LANGUAGE plpgsql
+    AS $$
+Begin
+	Return Query
+	Select
+	id,
+	ad,
+	soyad,
+	seviyeid
+  From
+	uye_list
+  Where
+  seviyeid=pr1;
+End;
+$$;
+
+
+ALTER FUNCTION public.istenilenseviyeliuyeler(pr1 smallint) OWNER TO postgres;
+
+--
+-- TOC entry 249 (class 1255 OID 16630)
+-- Name: seviyeli_uye_ekleme(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.seviyeli_uye_ekleme() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    INSERT INTO
+        seviyeli_uyeler(kullanici_id,kullaniciadi,seviyeid,yetki_id)
+        VALUES(new.id,new.kullaniciad,new.seviyeid,new.yetki_id);
+
+           RETURN new;
+END;
+$$;
+
+
+ALTER FUNCTION public.seviyeli_uye_ekleme() OWNER TO postgres;
+
+--
+-- TOC entry 240 (class 1255 OID 16590)
+-- Name: uye_ekle(text, text, integer, integer, text, text, text, integer); Type: PROCEDURE; Schema: public; Owner: postgres
+--
+
+CREATE PROCEDURE public.uye_ekle(IN p1 text, IN p2 text, IN p3 integer, IN p4 integer, IN p5 text, IN p6 text, IN p7 text, IN p8 integer)
+    LANGUAGE sql
+    AS $$
+insert into uye_list (ad,soyad,sehirid,ilceid,kullaniciad,sifre,adres,seviyeid,yetki_id) values (p1,p2,p3,p4,p5,p6,p7,p8,0);
+$$;
+
+
+ALTER PROCEDURE public.uye_ekle(IN p1 text, IN p2 text, IN p3 integer, IN p4 integer, IN p5 text, IN p6 text, IN p7 text, IN p8 integer) OWNER TO postgres;
+
+--
+-- TOC entry 252 (class 1255 OID 16648)
+-- Name: uyekadidegis(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.uyekadidegis() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  UPDATE seviyeli_uyeler
+  set kullaniciadi= NEW.kullaniciad
+  WHERE kullanici_id = NEW.id;
+  RETURN NEW;
+END
+$$;
+
+
+ALTER FUNCTION public.uyekadidegis() OWNER TO postgres;
+
+--
+-- TOC entry 250 (class 1255 OID 16638)
+-- Name: uyeseviyedegis(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.uyeseviyedegis() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  UPDATE seviyeli_uyeler
+  set seviyeid = NEW.seviyeid
+  WHERE kullanici_id = NEW.id;
+  RETURN NEW;
+END
+$$;
+
+
+ALTER FUNCTION public.uyeseviyedegis() OWNER TO postgres;
+
+--
+-- TOC entry 238 (class 1255 OID 16592)
+-- Name: yemek_ekle(text, integer, double precision); Type: PROCEDURE; Schema: public; Owner: postgres
+--
+
+CREATE PROCEDURE public.yemek_ekle(IN p1 text, IN p2 integer, IN p3 double precision)
+    LANGUAGE sql
+    AS $$
+insert into yemek_list (yemekad,yemek_kat,tutar) values (p1,p2,p3);
+$$;
+
+
+ALTER PROCEDURE public.yemek_ekle(IN p1 text, IN p2 integer, IN p3 double precision) OWNER TO postgres;
+
+--
+-- TOC entry 254 (class 1255 OID 16663)
+-- Name: yemek_ekleme(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.yemek_ekleme() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    INSERT INTO
+        yemek_kategori(yemek_id,kategori_id)
+        VALUES(new.id,new.yemek_kat);
+           RETURN new;
+END;
+$$;
+
+
+ALTER FUNCTION public.yemek_ekleme() OWNER TO postgres;
+
+--
+-- TOC entry 241 (class 1255 OID 16594)
+-- Name: yemek_fiyat_guncelle(integer, integer); Type: PROCEDURE; Schema: public; Owner: postgres
+--
+
+CREATE PROCEDURE public.yemek_fiyat_guncelle(IN p1 integer, IN p2 integer)
+    LANGUAGE sql
+    AS $$
+update yemek_list SET tutar = p2 WHERE id = p1;
+$$;
+
+
+ALTER PROCEDURE public.yemek_fiyat_guncelle(IN p1 integer, IN p2 integer) OWNER TO postgres;
+
+--
+-- TOC entry 239 (class 1255 OID 16593)
+-- Name: yemek_kategori_guncelle(integer, integer); Type: PROCEDURE; Schema: public; Owner: postgres
+--
+
+CREATE PROCEDURE public.yemek_kategori_guncelle(IN p1 integer, IN p2 integer)
+    LANGUAGE sql
+    AS $$
+update yemek_list SET yemek_kat = p2 WHERE id = p1;
+$$;
+
+
+ALTER PROCEDURE public.yemek_kategori_guncelle(IN p1 integer, IN p2 integer) OWNER TO postgres;
+
+--
+-- TOC entry 266 (class 1255 OID 16675)
+-- Name: yemekfiyatdegisikligi(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.yemekfiyatdegisikligi() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW."tutar" <> OLD."tutar" THEN
+        INSERT INTO "yemekfiyatdegisikligi"("urunno", "eskifiyat", "yenifiyat", "degisiklik_tarih")
+        VALUES(OLD."id", OLD."tutar", NEW."tutar", CURRENT_TIMESTAMP::TIMESTAMP);
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.yemekfiyatdegisikligi() OWNER TO postgres;
+
+--
+-- TOC entry 253 (class 1255 OID 16661)
+-- Name: yemekkatdegis(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.yemekkatdegis() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  UPDATE yemek_kategori
+  set kategori_id = NEW.yemek_kat
+  WHERE yemek_id = NEW.id;
+  RETURN NEW;
+END
+$$;
+
+
+ALTER FUNCTION public.yemekkatdegis() OWNER TO postgres;
+
+--
+-- TOC entry 244 (class 1255 OID 16599)
+-- Name: yorumu_cevapla(integer, text); Type: PROCEDURE; Schema: public; Owner: postgres
+--
+
+CREATE PROCEDURE public.yorumu_cevapla(IN p1 integer, IN p2 text)
+    LANGUAGE sql
+    AS $$
+update yorumlar set cevap = p2, yorum_durum = 2 WHERE id = p1;
+$$;
+
+
+ALTER PROCEDURE public.yorumu_cevapla(IN p1 integer, IN p2 text) OWNER TO postgres;
+
+--
+-- TOC entry 245 (class 1255 OID 16600)
+-- Name: yorumu_guncelle(integer, text, text); Type: PROCEDURE; Schema: public; Owner: postgres
+--
+
+CREATE PROCEDURE public.yorumu_guncelle(IN p1 integer, IN p2 text, IN p3 text)
+    LANGUAGE sql
+    AS $$
+update yorumlar set yorum = p3, cevap = p2, yorum_durum = 2 WHERE id = p1;
+$$;
+
+
+ALTER PROCEDURE public.yorumu_guncelle(IN p1 integer, IN p2 text, IN p3 text) OWNER TO postgres;
+
+--
+-- TOC entry 242 (class 1255 OID 16595)
+-- Name: yorumu_okundu_yap(integer); Type: PROCEDURE; Schema: public; Owner: postgres
+--
+
+CREATE PROCEDURE public.yorumu_okundu_yap(IN p1 integer)
+    LANGUAGE sql
+    AS $$
+update yorumlar SET yorum_durum = 1  WHERE id = p1;
+$$;
+
+
+ALTER PROCEDURE public.yorumu_okundu_yap(IN p1 integer) OWNER TO postgres;
+
+--
+-- TOC entry 243 (class 1255 OID 16596)
+-- Name: yorumu_sil(integer); Type: PROCEDURE; Schema: public; Owner: postgres
+--
+
+CREATE PROCEDURE public.yorumu_sil(IN p1 integer)
+    LANGUAGE sql
+    AS $$
+delete from yorumlar WHERE id = p1;
+$$;
+
+
+ALTER PROCEDURE public.yorumu_sil(IN p1 integer) OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 214 (class 1259 OID 16448)
+-- Name: uye_list; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.uye_list (
+    id smallint NOT NULL,
+    ad character varying(15) NOT NULL,
+    soyad character varying(15) NOT NULL,
+    sehirid smallint DEFAULT 0,
+    ilceid smallint DEFAULT 0,
+    kullaniciad character varying(15) NOT NULL,
+    sifre character varying(25) NOT NULL,
+    adres character varying(100),
+    seviyeid smallint NOT NULL,
+    yetki_id smallint NOT NULL
+);
+
+
+ALTER TABLE public.uye_list OWNER TO postgres;
+
+--
+-- TOC entry 235 (class 1259 OID 16794)
+-- Name: calisan_list; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.calisan_list (
+    id smallint
+)
+INHERITS (public.uye_list);
+
+
+ALTER TABLE public.calisan_list OWNER TO postgres;
+
+--
+-- TOC entry 236 (class 1259 OID 16801)
+-- Name: calisan_list_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.calisan_list ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.calisan_list_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- TOC entry 230 (class 1259 OID 16655)
+-- Name: calisan_yetki_adlari; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.calisan_yetki_adlari (
+    yetki_id smallint NOT NULL,
+    yetki_adi character varying(20) NOT NULL
+);
+
+
+ALTER TABLE public.calisan_yetki_adlari OWNER TO postgres;
+
+--
+-- TOC entry 217 (class 1259 OID 16493)
+-- Name: ilceler; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.ilceler (
+    id smallint NOT NULL,
+    il_id smallint NOT NULL,
+    ilcead character varying(30) NOT NULL
+);
+
+
+ALTER TABLE public.ilceler OWNER TO postgres;
+
+--
+-- TOC entry 216 (class 1259 OID 16488)
+-- Name: sehirler; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sehirler (
+    id smallint NOT NULL,
+    plaka_kodu character varying(5) NOT NULL,
+    sehirad character varying(30) NOT NULL
+);
+
+
+ALTER TABLE public.sehirler OWNER TO postgres;
+
+--
+-- TOC entry 222 (class 1259 OID 16532)
+-- Name: seviyeadlari; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.seviyeadlari (
+    seviyeid smallint NOT NULL,
+    seviyead character varying(50) NOT NULL
+);
+
+
+ALTER TABLE public.seviyeadlari OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 16537)
+-- Name: seviyediscount; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.seviyediscount (
+    id smallint NOT NULL,
+    seviyedisc integer NOT NULL,
+    seviyeid smallint NOT NULL
+);
+
+
+ALTER TABLE public.seviyediscount OWNER TO postgres;
+
+--
+-- TOC entry 234 (class 1259 OID 16788)
+-- Name: seviyeli_uyeler; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.seviyeli_uyeler (
+    id smallint NOT NULL,
+    kullanici_id smallint NOT NULL,
+    kullaniciadi character varying(20) NOT NULL,
+    seviyeid smallint NOT NULL,
+    yetki_id smallint NOT NULL
+);
+
+
+ALTER TABLE public.seviyeli_uyeler OWNER TO postgres;
+
+--
+-- TOC entry 237 (class 1259 OID 16802)
+-- Name: seviyeli_uyeler_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.seviyeli_uyeler ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.seviyeli_uyeler_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- TOC entry 225 (class 1259 OID 16560)
+-- Name: siparis_list; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.siparis_list (
+    id smallint NOT NULL,
+    secilenyemek integer[] NOT NULL,
+    kullanicis smallint,
+    toplam double precision NOT NULL,
+    odemebicimi smallint NOT NULL,
+    tamamlanma smallint NOT NULL,
+    siparisialan smallint DEFAULT 0
+);
+
+
+ALTER TABLE public.siparis_list OWNER TO postgres;
+
+--
+-- TOC entry 224 (class 1259 OID 16559)
+-- Name: siparis_list_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.siparis_list ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.siparis_list_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- TOC entry 226 (class 1259 OID 16568)
+-- Name: siparis_tamamlandimi; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.siparis_tamamlandimi (
+    id smallint NOT NULL,
+    durum character varying(20) NOT NULL
+);
+
+
+ALTER TABLE public.siparis_tamamlandimi OWNER TO postgres;
+
+--
+-- TOC entry 215 (class 1259 OID 16451)
+-- Name: uye_list_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.uye_list ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.uye_list_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- TOC entry 220 (class 1259 OID 16516)
+-- Name: yemek_kategori; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.yemek_kategori (
+    id smallint NOT NULL,
+    yemek_id smallint NOT NULL,
+    kategori_id smallint NOT NULL
+);
+
+
+ALTER TABLE public.yemek_kategori OWNER TO postgres;
+
+--
+-- TOC entry 231 (class 1259 OID 16660)
+-- Name: yemek_kategori_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.yemek_kategori ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.yemek_kategori_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- TOC entry 221 (class 1259 OID 16521)
+-- Name: yemek_kategoriad; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.yemek_kategoriad (
+    id smallint NOT NULL,
+    adi character varying(50) NOT NULL
+);
+
+
+ALTER TABLE public.yemek_kategoriad OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 16511)
+-- Name: yemek_list; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.yemek_list (
+    id smallint NOT NULL,
+    yemekad character varying(50) NOT NULL,
+    yemek_kat smallint NOT NULL,
+    tutar double precision NOT NULL
+);
+
+
+ALTER TABLE public.yemek_list OWNER TO postgres;
+
+--
+-- TOC entry 218 (class 1259 OID 16510)
+-- Name: yemek_list_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.yemek_list ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.yemek_list_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- TOC entry 233 (class 1259 OID 16669)
+-- Name: yemekfiyatdegisikligi; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.yemekfiyatdegisikligi (
+    kayitno integer NOT NULL,
+    urunno smallint NOT NULL,
+    eskifiyat real NOT NULL,
+    yenifiyat real NOT NULL,
+    degisiklik_tarih timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.yemekfiyatdegisikligi OWNER TO postgres;
+
+--
+-- TOC entry 232 (class 1259 OID 16668)
+-- Name: yemekfiyatdegisikligi_kayitno_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.yemekfiyatdegisikligi_kayitno_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.yemekfiyatdegisikligi_kayitno_seq OWNER TO postgres;
+
+--
+-- TOC entry 3506 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: yemekfiyatdegisikligi_kayitno_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.yemekfiyatdegisikligi_kayitno_seq OWNED BY public.yemekfiyatdegisikligi.kayitno;
+
+
+--
+-- TOC entry 229 (class 1259 OID 16580)
+-- Name: yorum_durumlari; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.yorum_durumlari (
+    id smallint NOT NULL,
+    durum character varying(20) NOT NULL
+);
+
+
+ALTER TABLE public.yorum_durumlari OWNER TO postgres;
+
+--
+-- TOC entry 228 (class 1259 OID 16574)
+-- Name: yorumlar; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.yorumlar (
+    id smallint NOT NULL,
+    yorum character varying(100) NOT NULL,
+    yildiz smallint NOT NULL,
+    siparis_id smallint NOT NULL,
+    siparis_durum smallint NOT NULL,
+    yorum_durum smallint DEFAULT 0 NOT NULL,
+    cevap character varying(100),
+    kullanici_id smallint NOT NULL
+);
+
+
+ALTER TABLE public.yorumlar OWNER TO postgres;
+
+--
+-- TOC entry 227 (class 1259 OID 16573)
+-- Name: yorumlar_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.yorumlar ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.yorumlar_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- TOC entry 3265 (class 2604 OID 16797)
+-- Name: calisan_list sehirid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.calisan_list ALTER COLUMN sehirid SET DEFAULT 0;
+
+
+--
+-- TOC entry 3266 (class 2604 OID 16798)
+-- Name: calisan_list ilceid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.calisan_list ALTER COLUMN ilceid SET DEFAULT 0;
+
+
+--
+-- TOC entry 3264 (class 2604 OID 16672)
+-- Name: yemekfiyatdegisikligi kayitno; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yemekfiyatdegisikligi ALTER COLUMN kayitno SET DEFAULT nextval('public.yemekfiyatdegisikligi_kayitno_seq'::regclass);
+
+
+--
+-- TOC entry 3498 (class 0 OID 16794)
+-- Dependencies: 235
+-- Data for Name: calisan_list; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.calisan_list (id, ad, soyad, sehirid, ilceid, kullaniciad, sifre, adres, seviyeid, yetki_id) FROM stdin;
+4	Mustafa	Yakın	0	0	a	a	\N	0	2
+5	Ahmet	KasiyerOğlu	0	0	ahmet55	b	\N	0	1
+\.
+
+
+--
+-- TOC entry 3493 (class 0 OID 16655)
+-- Dependencies: 230
+-- Data for Name: calisan_yetki_adlari; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.calisan_yetki_adlari (yetki_id, yetki_adi) FROM stdin;
+1	Kasiyer
+2	SuperVisor
+0	Yetkisiz Üye
+\.
+
+
+--
+-- TOC entry 3480 (class 0 OID 16493)
+-- Dependencies: 217
+-- Data for Name: ilceler; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.ilceler (id, il_id, ilcead) FROM stdin;
+1	1	ALADAĞ
+2	1	CEYHAN
+3	1	ÇUKUROVA
+4	1	FEKE
+5	1	İMAMOĞLU
+6	1	KARAİSALI
+7	1	KARATAŞ
+8	1	KOZAN
+9	1	POZANTI
+10	1	SAİMBEYLİ
+11	1	SARIÇAM
+12	1	SEYHAN
+13	1	TUFANBEYLİ
+14	1	YUMURTALIK
+15	1	YÜREĞİR
+16	2	BESNİ
+17	2	ÇELİKHAN
+18	2	GERGER
+19	2	GÖLBAŞI
+20	2	KAHTA
+21	2	MERKEZ
+22	2	SAMSAT
+23	2	SİNCİK
+24	2	TUT
+25	3	BAŞMAKÇI
+26	3	BAYAT
+27	3	BOLVADİN
+28	3	ÇAY
+29	3	ÇOBANLAR
+30	3	DAZKIRI
+31	3	DİNAR
+32	3	EMİRDAĞ
+33	3	EVCİLER
+34	3	HOCALAR
+35	3	İHSANİYE
+36	3	İSCEHİSAR
+37	3	KIZILÖREN
+38	3	MERKEZ
+39	3	SANDIKLI
+40	3	SİNANPAŞA
+41	3	SULTANDAĞI
+42	3	ŞUHUT
+43	4	DİYADİN
+44	4	DOĞUBAYAZIT
+45	4	ELEŞKİRT
+46	4	HAMUR
+47	4	MERKEZ
+48	4	PATNOS
+49	4	TAŞLIÇAY
+50	4	TUTAK
+51	5	GÖYNÜCEK
+52	5	GÜMÜŞHACIKÖY
+53	5	HAMAMÖZÜ
+54	5	MERKEZ
+55	5	MERZİFON
+56	5	SULUOVA
+57	5	TAŞOVA
+58	6	AKYURT
+59	6	ALTINDAĞ
+60	6	AYAŞ
+61	6	BALA
+62	6	BEYPAZARI
+63	6	ÇAMLIDERE
+64	6	ÇANKAYA
+65	6	ÇUBUK
+66	6	ELMADAĞ
+67	6	ETİMESGUT
+68	6	EVREN
+69	6	GÖLBAŞI
+70	6	GÜDÜL
+71	6	HAYMANA
+72	6	KAHRAMANKAZAN
+73	6	KALECİK
+74	6	KEÇİÖREN
+75	6	KIZILCAHAMAM
+76	6	MAMAK
+77	6	NALLIHAN
+78	6	POLATLI
+79	6	PURSAKLAR
+80	6	SİNCAN
+81	6	ŞEREFLİKOÇHİSAR
+82	6	YENİMAHALLE
+83	7	AKSEKİ
+84	7	AKSU
+85	7	ALANYA
+86	7	DEMRE
+87	7	DÖŞEMEALTI
+88	7	ELMALI
+89	7	FİNİKE
+90	7	GAZİPAŞA
+91	7	GÜNDOĞMUŞ
+92	7	İBRADI
+93	7	KAŞ
+94	7	KEMER
+95	7	KEPEZ
+96	7	KONYAALTI
+97	7	KORKUTELİ
+98	7	KUMLUCA
+99	7	MANAVGAT
+100	7	MURATPAŞA
+101	7	SERİK
+102	8	ARDANUÇ
+103	8	ARHAVİ
+104	8	BORÇKA
+105	8	HOPA
+106	8	MERKEZ
+107	8	MURGUL
+108	8	ŞAVŞAT
+109	8	YUSUFELİ
+110	9	BOZDOĞAN
+111	9	BUHARKENT
+112	9	ÇİNE
+113	9	DİDİM
+114	9	EFELER
+115	9	GERMENCİK
+116	9	İNCİRLİOVA
+117	9	KARACASU
+118	9	KARPUZLU
+119	9	KOÇARLI
+120	9	KÖŞK
+121	9	KUŞADASI
+122	9	KUYUCAK
+123	9	NAZİLLİ
+124	9	SÖKE
+125	9	SULTANHİSAR
+126	9	YENİPAZAR
+127	10	ALTIEYLÜL
+128	10	AYVALIK
+129	10	BALYA
+130	10	BANDIRMA
+131	10	BİGADİÇ
+132	10	BURHANİYE
+133	10	DURSUNBEY
+134	10	EDREMİT
+135	10	ERDEK
+136	10	GÖMEÇ
+137	10	GÖNEN
+138	10	HAVRAN
+139	10	İVRİNDİ
+140	10	KARESİ
+141	10	KEPSUT
+142	10	MANYAS
+143	10	MARMARA
+144	10	SAVAŞTEPE
+145	10	SINDIRGI
+146	10	SUSURLUK
+147	11	BOZÜYÜK
+148	11	GÖLPAZARI
+149	11	İNHİSAR
+150	11	MERKEZ
+151	11	OSMANELİ
+152	11	PAZARYERİ
+153	11	SÖĞÜT
+154	11	YENİPAZAR
+155	12	ADAKLI
+156	12	GENÇ
+157	12	KARLIOVA
+158	12	KİĞI
+159	12	MERKEZ
+160	12	SOLHAN
+161	12	YAYLADERE
+162	12	YEDİSU
+163	13	ADİLCEVAZ
+164	13	AHLAT
+165	13	GÜROYMAK
+166	13	HİZAN
+167	13	MERKEZ
+168	13	MUTKİ
+169	13	TATVAN
+170	14	DÖRTDİVAN
+171	14	GEREDE
+172	14	GÖYNÜK
+173	14	KIBRISCIK
+174	14	MENGEN
+175	14	MERKEZ
+176	14	MUDURNU
+177	14	SEBEN
+178	14	YENİÇAĞA
+179	15	AĞLASUN
+180	15	ALTINYAYLA
+181	15	BUCAK
+182	15	ÇAVDIR
+183	15	ÇELTİKÇİ
+184	15	GÖLHİSAR
+185	15	KARAMANLI
+186	15	KEMER
+187	15	MERKEZ
+188	15	TEFENNİ
+189	15	YEŞİLOVA
+190	16	BÜYÜKORHAN
+191	16	GEMLİK
+192	16	GÜRSU
+193	16	HARMANCIK
+194	16	İNEGÖL
+195	16	İZNİK
+196	16	KARACABEY
+197	16	KELES
+198	16	KESTEL
+199	16	MUDANYA
+200	16	MUSTAFAKEMALPAŞA
+201	16	NİLÜFER
+202	16	ORHANELİ
+203	16	ORHANGAZİ
+204	16	OSMANGAZİ
+205	16	YENİŞEHİR
+206	16	YILDIRIM
+207	17	AYVACIK
+208	17	BAYRAMİÇ
+209	17	BİGA
+210	17	BOZCAADA
+211	17	ÇAN
+212	17	ECEABAT
+213	17	EZİNE
+214	17	GELİBOLU
+215	17	GÖKÇEADA
+216	17	LAPSEKİ
+217	17	MERKEZ
+218	17	YENİCE
+219	18	ATKARACALAR
+220	18	BAYRAMÖREN
+221	18	ÇERKEŞ
+222	18	ELDİVAN
+223	18	ILGAZ
+224	18	KIZILIRMAK
+225	18	KORGUN
+226	18	KURŞUNLU
+227	18	MERKEZ
+228	18	ORTA
+229	18	ŞABANÖZÜ
+230	18	YAPRAKLI
+231	19	ALACA
+232	19	BAYAT
+233	19	BOĞAZKALE
+234	19	DODURGA
+235	19	İSKİLİP
+236	19	KARGI
+237	19	LAÇİN
+238	19	MECİTÖZÜ
+239	19	MERKEZ
+240	19	OĞUZLAR
+241	19	ORTAKÖY
+242	19	OSMANCIK
+243	19	SUNGURLU
+244	19	UĞURLUDAĞ
+245	20	ACIPAYAM
+246	20	BABADAĞ
+247	20	BAKLAN
+248	20	BEKİLLİ
+249	20	BEYAĞAÇ
+250	20	BOZKURT
+251	20	BULDAN
+252	20	ÇAL
+253	20	ÇAMELİ
+254	20	ÇARDAK
+255	20	ÇİVRİL
+256	20	GÜNEY
+257	20	HONAZ
+258	20	KALE
+259	20	MERKEZEFENDİ
+260	20	PAMUKKALE
+261	20	SARAYKÖY
+262	20	SERİNHİSAR
+263	20	TAVAS
+264	21	BAĞLAR
+265	21	BİSMİL
+266	21	ÇERMİK
+267	21	ÇINAR
+268	21	ÇÜNGÜŞ
+269	21	DİCLE
+270	21	EĞİL
+271	21	ERGANİ
+272	21	HANİ
+273	21	HAZRO
+274	21	KAYAPINAR
+275	21	KOCAKÖY
+276	21	KULP
+277	21	LİCE
+278	21	SİLVAN
+279	21	SUR
+280	21	YENİŞEHİR
+281	22	ENEZ
+282	22	HAVSA
+283	22	İPSALA
+284	22	KEŞAN
+285	22	LALAPAŞA
+286	22	MERİÇ
+287	22	MERKEZ
+288	22	SÜLOĞLU
+289	22	UZUNKÖPRÜ
+290	23	AĞIN
+291	23	ALACAKAYA
+292	23	ARICAK
+293	23	BASKİL
+294	23	KARAKOÇAN
+295	23	KEBAN
+296	23	KOVANCILAR
+297	23	MADEN
+298	23	MERKEZ
+299	23	PALU
+300	23	SİVRİCE
+301	24	ÇAYIRLI
+302	24	İLİÇ
+303	24	KEMAH
+304	24	KEMALİYE
+305	24	MERKEZ
+306	24	OTLUKBELİ
+307	24	REFAHİYE
+308	24	TERCAN
+309	24	ÜZÜMLÜ
+310	25	AŞKALE
+311	25	AZİZİYE
+312	25	ÇAT
+313	25	HINIS
+314	25	HORASAN
+315	25	İSPİR
+316	25	KARAÇOBAN
+317	25	KARAYAZI
+318	25	KÖPRÜKÖY
+319	25	NARMAN
+320	25	OLTU
+321	25	OLUR
+322	25	PALANDÖKEN
+323	25	PASİNLER
+324	25	PAZARYOLU
+325	25	ŞENKAYA
+326	25	TEKMAN
+327	25	TORTUM
+328	25	UZUNDERE
+329	25	YAKUTİYE
+330	26	ALPU
+331	26	BEYLİKOVA
+332	26	ÇİFTELER
+333	26	GÜNYÜZÜ
+334	26	HAN
+335	26	İNÖNÜ
+336	26	MAHMUDİYE
+337	26	MİHALGAZİ
+338	26	MİHALIÇÇIK
+339	26	ODUNPAZARI
+340	26	SARICAKAYA
+341	26	SEYİTGAZİ
+342	26	SİVRİHİSAR
+343	26	TEPEBAŞI
+344	27	ARABAN
+345	27	İSLAHİYE
+346	27	KARKAMIŞ
+347	27	NİZİP
+348	27	NURDAĞI
+349	27	OĞUZELİ
+350	27	ŞAHİNBEY
+351	27	ŞEHİTKAMİL
+352	27	YAVUZELİ
+353	28	ALUCRA
+354	28	BULANCAK
+355	28	ÇAMOLUK
+356	28	ÇANAKÇI
+357	28	DERELİ
+358	28	DOĞANKENT
+359	28	ESPİYE
+360	28	EYNESİL
+361	28	GÖRELE
+362	28	GÜCE
+363	28	KEŞAP
+364	28	MERKEZ
+365	28	PİRAZİZ
+366	28	ŞEBİNKARAHİSAR
+367	28	TİREBOLU
+368	28	YAĞLIDERE
+369	29	KELKİT
+370	29	KÖSE
+371	29	KÜRTÜN
+372	29	MERKEZ
+373	29	ŞİRAN
+374	29	TORUL
+375	30	ÇUKURCA
+376	30	MERKEZ
+377	30	ŞEMDİNLİ
+378	30	YÜKSEKOVA
+379	31	ALTINÖZÜ
+380	31	ANTAKYA
+381	31	ARSUZ
+382	31	BELEN
+383	31	DEFNE
+384	31	DÖRTYOL
+385	31	ERZİN
+386	31	HASSA
+387	31	İSKENDERUN
+388	31	KIRIKHAN
+389	31	KUMLU
+390	31	PAYAS
+391	31	REYHANLI
+392	31	SAMANDAĞ
+393	31	YAYLADAĞI
+394	32	AKSU
+395	32	ATABEY
+396	32	EĞİRDİR
+397	32	GELENDOST
+398	32	GÖNEN
+399	32	KEÇİBORLU
+400	32	MERKEZ
+401	32	SENİRKENT
+402	32	SÜTÇÜLER
+403	32	ŞARKİKARAAĞAÇ
+404	32	ULUBORLU
+405	32	YALVAÇ
+406	32	YENİŞARBADEMLİ
+407	33	AKDENİZ
+408	33	ANAMUR
+409	33	AYDINCIK
+410	33	BOZYAZI
+411	33	ÇAMLIYAYLA
+412	33	ERDEMLİ
+413	33	GÜLNAR
+414	33	MEZİTLİ
+415	33	MUT
+416	33	SİLİFKE
+417	33	TARSUS
+418	33	TOROSLAR
+419	33	YENİŞEHİR
+420	34	ADALAR
+421	34	ARNAVUTKÖY
+422	34	ATAŞEHİR
+423	34	AVCILAR
+424	34	BAĞCILAR
+425	34	BAHÇELİEVLER
+426	34	BAKIRKÖY
+427	34	BAŞAKŞEHİR
+428	34	BAYRAMPAŞA
+429	34	BEŞİKTAŞ
+430	34	BEYKOZ
+431	34	BEYLİKDÜZÜ
+432	34	BEYOĞLU
+433	34	BÜYÜKÇEKMECE
+434	34	ÇATALCA
+435	34	ÇEKMEKÖY
+436	34	ESENLER
+437	34	ESENYURT
+438	34	EYÜP
+439	34	FATİH
+440	34	GAZİOSMANPAŞA
+441	34	GÜNGÖREN
+442	34	KADIKÖY
+443	34	KAĞITHANE
+444	34	KARTAL
+445	34	KÜÇÜKÇEKMECE
+446	34	MALTEPE
+447	34	PENDİK
+448	34	SANCAKTEPE
+449	34	SARIYER
+450	34	SİLİVRİ
+451	34	SULTANBEYLİ
+452	34	SULTANGAZİ
+453	34	ŞİLE
+454	34	ŞİŞLİ
+455	34	TUZLA
+456	34	ÜMRANİYE
+457	34	ÜSKÜDAR
+458	34	ZEYTİNBURNU
+459	35	ALİAĞA
+460	35	BALÇOVA
+461	35	BAYINDIR
+462	35	BAYRAKLI
+463	35	BERGAMA
+464	35	BEYDAĞ
+465	35	BORNOVA
+466	35	BUCA
+467	35	ÇEŞME
+468	35	ÇİĞLİ
+469	35	DİKİLİ
+470	35	FOÇA
+471	35	GAZİEMİR
+472	35	GÜZELBAHÇE
+473	35	KARABAĞLAR
+474	35	KARABURUN
+475	35	KARŞIYAKA
+476	35	KEMALPAŞA
+477	35	KINIK
+478	35	KİRAZ
+479	35	KONAK
+480	35	MENDERES
+481	35	MENEMEN
+482	35	NARLIDERE
+483	35	ÖDEMİŞ
+484	35	SEFERİHİSAR
+485	35	SELÇUK
+486	35	TİRE
+487	35	TORBALI
+488	35	URLA
+489	36	AKYAKA
+490	36	ARPAÇAY
+491	36	DİGOR
+492	36	KAĞIZMAN
+493	36	MERKEZ
+494	36	SARIKAMIŞ
+495	36	SELİM
+496	36	SUSUZ
+497	37	ABANA
+498	37	AĞLI
+499	37	ARAÇ
+500	37	AZDAVAY
+501	37	BOZKURT
+502	37	CİDE
+503	37	ÇATALZEYTİN
+504	37	DADAY
+505	37	DEVREKANİ
+506	37	DOĞANYURT
+507	37	HANÖNÜ
+508	37	İHSANGAZİ
+509	37	İNEBOLU
+510	37	KÜRE
+511	37	MERKEZ
+512	37	PINARBAŞI
+513	37	SEYDİLER
+514	37	ŞENPAZAR
+515	37	TAŞKÖPRÜ
+516	37	TOSYA
+517	38	AKKIŞLA
+518	38	BÜNYAN
+519	38	DEVELİ
+520	38	FELAHİYE
+521	38	HACILAR
+522	38	İNCESU
+523	38	KOCASİNAN
+524	38	MELİKGAZİ
+525	38	ÖZVATAN
+526	38	PINARBAŞI
+527	38	SARIOĞLAN
+528	38	SARIZ
+529	38	TALAS
+530	38	TOMARZA
+531	38	YAHYALI
+532	38	YEŞİLHİSAR
+533	39	BABAESKİ
+534	39	DEMİRKÖY
+535	39	KOFÇAZ
+536	39	LÜLEBURGAZ
+537	39	MERKEZ
+538	39	PEHLİVANKÖY
+539	39	PINARHİSAR
+540	39	VİZE
+541	40	AKÇAKENT
+542	40	AKPINAR
+543	40	BOZTEPE
+544	40	ÇİÇEKDAĞI
+545	40	KAMAN
+546	40	MERKEZ
+547	40	MUCUR
+548	41	BAŞİSKELE
+549	41	ÇAYIROVA
+550	41	DARICA
+551	41	DERİNCE
+552	41	DİLOVASI
+553	41	GEBZE
+554	41	GÖLCÜK
+555	41	İZMİT
+556	41	KANDIRA
+557	41	KARAMÜRSEL
+558	41	KARTEPE
+559	41	KÖRFEZ
+560	42	AHIRLI
+561	42	AKÖREN
+562	42	AKŞEHİR
+563	42	ALTINEKİN
+564	42	BEYŞEHİR
+565	42	BOZKIR
+566	42	CİHANBEYLİ
+567	42	ÇELTİK
+568	42	ÇUMRA
+569	42	DERBENT
+570	42	DEREBUCAK
+571	42	DOĞANHİSAR
+572	42	EMİRGAZİ
+573	42	EREĞLİ
+574	42	GÜNEYSINIR
+575	42	HADİM
+576	42	HALKAPINAR
+577	42	HÜYÜK
+578	42	ILGIN
+579	42	KADINHANI
+580	42	KARAPINAR
+581	42	KARATAY
+582	42	KULU
+583	42	MERAM
+584	42	SARAYÖNÜ
+585	42	SELÇUKLU
+586	42	SEYDİŞEHİR
+587	42	TAŞKENT
+588	42	TUZLUKÇU
+589	42	YALIHÜYÜK
+590	42	YUNAK
+591	43	ALTINTAŞ
+592	43	ASLANAPA
+593	43	ÇAVDARHİSAR
+594	43	DOMANİÇ
+595	43	DUMLUPINAR
+596	43	EMET
+597	43	GEDİZ
+598	43	HİSARCIK
+599	43	MERKEZ
+600	43	PAZARLAR
+601	43	SİMAV
+602	43	ŞAPHANE
+603	43	TAVŞANLI
+604	44	AKÇADAĞ
+605	44	ARAPGİR
+606	44	ARGUVAN
+607	44	BATTALGAZİ
+608	44	DARENDE
+609	44	DOĞANŞEHİR
+610	44	DOĞANYOL
+611	44	HEKİMHAN
+612	44	KALE
+613	44	KULUNCAK
+614	44	PÜTÜRGE
+615	44	YAZIHAN
+616	44	YEŞİLYURT
+617	45	AHMETLİ
+618	45	AKHİSAR
+619	45	ALAŞEHİR
+620	45	DEMİRCİ
+621	45	GÖLMARMARA
+622	45	GÖRDES
+623	45	KIRKAĞAÇ
+624	45	KÖPRÜBAŞI
+625	45	KULA
+626	45	SALİHLİ
+627	45	SARIGÖL
+628	45	SARUHANLI
+629	45	SELENDİ
+630	45	SOMA
+631	45	ŞEHZADELER
+632	45	TURGUTLU
+633	45	YUNUSEMRE
+634	46	AFŞİN
+635	46	ANDIRIN
+636	46	ÇAĞLAYANCERİT
+637	46	DULKADİROĞLU
+638	46	EKİNÖZÜ
+639	46	ELBİSTAN
+640	46	GÖKSUN
+641	46	NURHAK
+642	46	ONİKİŞUBAT
+643	46	PAZARCIK
+644	46	TÜRKOĞLU
+645	47	ARTUKLU
+646	47	DARGEÇİT
+647	47	DERİK
+648	47	KIZILTEPE
+649	47	MAZIDAĞI
+650	47	MİDYAT
+651	47	NUSAYBİN
+652	47	ÖMERLİ
+653	47	SAVUR
+654	47	YEŞİLLİ
+655	48	BODRUM
+656	48	DALAMAN
+657	48	DATÇA
+658	48	FETHİYE
+659	48	KAVAKLIDERE
+660	48	KÖYCEĞİZ
+661	48	MARMARİS
+662	48	MENTEŞE
+663	48	MİLAS
+664	48	ORTACA
+665	48	SEYDİKEMER
+666	48	ULA
+667	48	YATAĞAN
+668	49	BULANIK
+669	49	HASKÖY
+670	49	KORKUT
+671	49	MALAZGİRT
+672	49	MERKEZ
+673	49	VARTO
+674	50	ACIGÖL
+675	50	AVANOS
+676	50	DERİNKUYU
+677	50	GÜLŞEHİR
+678	50	HACIBEKTAŞ
+679	50	KOZAKLI
+680	50	MERKEZ
+681	50	ÜRGÜP
+682	51	ALTUNHİSAR
+683	51	BOR
+684	51	ÇAMARDI
+685	51	ÇİFTLİK
+686	51	MERKEZ
+687	51	ULUKIŞLA
+688	52	AKKUŞ
+689	52	ALTINORDU
+690	52	AYBASTI
+691	52	ÇAMAŞ
+692	52	ÇATALPINAR
+693	52	ÇAYBAŞI
+694	52	FATSA
+695	52	GÖLKÖY
+696	52	GÜLYALI
+697	52	GÜRGENTEPE
+698	52	İKİZCE
+699	52	KABADÜZ
+700	52	KABATAŞ
+701	52	KORGAN
+702	52	KUMRU
+703	52	MESUDİYE
+704	52	PERŞEMBE
+705	52	ULUBEY
+706	52	ÜNYE
+707	53	ARDEŞEN
+708	53	ÇAMLIHEMŞİN
+709	53	ÇAYELİ
+710	53	DEREPAZARI
+711	53	FINDIKLI
+712	53	GÜNEYSU
+713	53	HEMŞİN
+714	53	İKİZDERE
+715	53	İYİDERE
+716	53	KALKANDERE
+717	53	MERKEZ
+718	53	PAZAR
+719	54	ADAPAZARI
+720	54	AKYAZI
+721	54	ARİFİYE
+722	54	ERENLER
+723	54	FERİZLİ
+724	54	GEYVE
+725	54	HENDEK
+726	54	KARAPÜRÇEK
+727	54	KARASU
+728	54	KAYNARCA
+729	54	KOCAALİ
+730	54	PAMUKOVA
+731	54	SAPANCA
+732	54	SERDİVAN
+733	54	SÖĞÜTLÜ
+734	54	TARAKLI
+735	55	19 MAYIS
+736	55	ALAÇAM
+737	55	ASARCIK
+738	55	ATAKUM
+739	55	AYVACIK
+740	55	BAFRA
+741	55	CANİK
+742	55	ÇARŞAMBA
+743	55	HAVZA
+744	55	İLKADIM
+745	55	KAVAK
+746	55	LADİK
+747	55	SALIPAZARI
+748	55	TEKKEKÖY
+749	55	TERME
+750	55	VEZİRKÖPRÜ
+751	55	YAKAKENT
+752	56	BAYKAN
+753	56	ERUH
+754	56	KURTALAN
+755	56	MERKEZ
+756	56	PERVARİ
+757	56	ŞİRVAN
+758	56	TİLLO
+759	57	AYANCIK
+760	57	BOYABAT
+761	57	DİKMEN
+762	57	DURAĞAN
+763	57	ERFELEK
+764	57	GERZE
+765	57	MERKEZ
+766	57	SARAYDÜZÜ
+767	57	TÜRKELİ
+768	58	AKINCILAR
+769	58	ALTINYAYLA
+770	58	DİVRİĞİ
+771	58	DOĞANŞAR
+772	58	GEMEREK
+773	58	GÖLOVA
+774	58	GÜRÜN
+775	58	HAFİK
+776	58	İMRANLI
+777	58	KANGAL
+778	58	KOYULHİSAR
+779	58	MERKEZ
+780	58	SUŞEHRİ
+781	58	ŞARKIŞLA
+782	58	ULAŞ
+783	58	YILDIZELİ
+784	58	ZARA
+785	59	ÇERKEZKÖY
+786	59	ÇORLU
+787	59	ERGENE
+788	59	HAYRABOLU
+789	59	KAPAKLI
+790	59	MALKARA
+791	59	MARMARAEREĞLİSİ
+792	59	MURATLI
+793	59	SARAY
+794	59	SÜLEYMANPAŞA
+795	59	ŞARKÖY
+796	60	ALMUS
+797	60	ARTOVA
+798	60	BAŞÇİFTLİK
+799	60	ERBAA
+800	60	MERKEZ
+801	60	NİKSAR
+802	60	PAZAR
+803	60	REŞADİYE
+804	60	SULUSARAY
+805	60	TURHAL
+806	60	YEŞİLYURT
+807	60	ZİLE
+808	61	AKÇAABAT
+809	61	ARAKLI
+810	61	ARSİN
+811	61	BEŞİKDÜZÜ
+812	61	ÇARŞIBAŞI
+813	61	ÇAYKARA
+814	61	DERNEKPAZARI
+815	61	DÜZKÖY
+816	61	HAYRAT
+817	61	KÖPRÜBAŞI
+818	61	MAÇKA
+819	61	OF
+820	61	ORTAHİSAR
+821	61	SÜRMENE
+822	61	ŞALPAZARI
+823	61	TONYA
+824	61	VAKFIKEBİR
+825	61	YOMRA
+826	62	ÇEMİŞGEZEK
+827	62	HOZAT
+828	62	MAZGİRT
+829	62	MERKEZ
+830	62	NAZIMİYE
+831	62	OVACIK
+832	62	PERTEK
+833	62	PÜLÜMÜR
+834	63	AKÇAKALE
+835	63	BİRECİK
+836	63	BOZOVA
+837	63	CEYLANPINAR
+838	63	EYYÜBİYE
+839	63	HALFETİ
+840	63	HALİLİYE
+841	63	HARRAN
+842	63	HİLVAN
+843	63	KARAKÖPRÜ
+844	63	SİVEREK
+845	63	SURUÇ
+846	63	VİRANŞEHİR
+847	64	BANAZ
+848	64	EŞME
+849	64	KARAHALLI
+850	64	MERKEZ
+851	64	SİVASLI
+852	64	ULUBEY
+853	65	BAHÇESARAY
+854	65	BAŞKALE
+855	65	ÇALDIRAN
+856	65	ÇATAK
+857	65	EDREMİT
+858	65	ERCİŞ
+859	65	GEVAŞ
+860	65	GÜRPINAR
+861	65	İPEKYOLU
+862	65	MURADİYE
+863	65	ÖZALP
+864	65	SARAY
+865	65	TUŞBA
+866	66	AKDAĞMADENİ
+867	66	AYDINCIK
+868	66	BOĞAZLIYAN
+869	66	ÇANDIR
+870	66	ÇAYIRALAN
+871	66	ÇEKEREK
+872	66	KADIŞEHRİ
+873	66	MERKEZ
+874	66	SARAYKENT
+875	66	SARIKAYA
+876	66	SORGUN
+877	66	ŞEFAATLİ
+878	66	YENİFAKILI
+879	66	YERKÖY
+880	67	ALAPLI
+881	67	ÇAYCUMA
+882	67	DEVREK
+883	67	EREĞLİ
+884	67	GÖKÇEBEY
+885	67	KİLİMLİ
+886	67	KOZLU
+887	67	MERKEZ
+888	68	AĞAÇÖREN
+889	68	ESKİL
+890	68	GÜLAĞAÇ
+891	68	GÜZELYURT
+892	68	MERKEZ
+893	68	ORTAKÖY
+894	68	SARIYAHŞİ
+895	69	AYDINTEPE
+896	69	DEMİRÖZÜ
+897	69	MERKEZ
+898	70	AYRANCI
+899	70	BAŞYAYLA
+900	70	ERMENEK
+901	70	KAZIMKARABEKİR
+902	70	MERKEZ
+903	70	SARIVELİLER
+904	71	BAHŞİLİ
+905	71	BALIŞEYH
+906	71	ÇELEBİ
+907	71	DELİCE
+908	71	KARAKEÇİLİ
+909	71	KESKİN
+910	71	MERKEZ
+911	71	SULAKYURT
+912	71	YAHŞİHAN
+913	72	BEŞİRİ
+914	72	GERCÜŞ
+915	72	HASANKEYF
+916	72	KOZLUK
+917	72	MERKEZ
+918	72	SASON
+919	73	BEYTÜŞŞEBAP
+920	73	CİZRE
+921	73	GÜÇLÜKONAK
+922	73	İDİL
+923	73	MERKEZ
+924	73	SİLOPİ
+925	73	ULUDERE
+926	74	AMASRA
+927	74	KURUCAŞİLE
+928	74	MERKEZ
+929	74	ULUS
+930	75	ÇILDIR
+931	75	DAMAL
+932	75	GÖLE
+933	75	HANAK
+934	75	MERKEZ
+935	75	POSOF
+936	76	ARALIK
+937	76	KARAKOYUNLU
+938	76	MERKEZ
+939	76	TUZLUCA
+940	77	ALTINOVA
+941	77	ARMUTLU
+942	77	ÇİFTLİKKÖY
+943	77	ÇINARCIK
+944	77	MERKEZ
+945	77	TERMAL
+946	78	EFLANİ
+947	78	ESKİPAZAR
+948	78	MERKEZ
+949	78	OVACIK
+950	78	SAFRANBOLU
+951	78	YENİCE
+952	79	ELBEYLİ
+953	79	MERKEZ
+954	79	MUSABEYLİ
+955	79	POLATELİ
+956	80	BAHÇE
+957	80	DÜZİÇİ
+958	80	HASANBEYLİ
+959	80	KADİRLİ
+960	80	MERKEZ
+961	80	SUMBAS
+962	80	TOPRAKKALE
+963	81	AKÇAKOCA
+964	81	CUMAYERİ
+965	81	ÇİLİMLİ
+966	81	GÖLYAKA
+967	81	GÜMÜŞOVA
+968	81	KAYNAŞLI
+969	81	MERKEZ
+970	81	YIĞILCA
+\.
+
+
+--
+-- TOC entry 3479 (class 0 OID 16488)
+-- Dependencies: 216
+-- Data for Name: sehirler; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.sehirler (id, plaka_kodu, sehirad) FROM stdin;
+1	01	Adana
+2	02	Adıyaman
+3	03	Afyonkarahisar
+4	04	Ağrı
+5	05	Amasya
+6	06	Ankara
+7	07	Antalya
+8	08	Artvin
+9	09	Aydın
+10	10	Balıkesir
+11	11	Bilecik
+12	12	Bingöl
+13	13	Bitlis
+14	14	Bolu
+15	15	Burdur
+16	16	Bursa
+17	17	Çanakkale
+18	18	Çankırı
+19	19	Çorum
+20	20	Denizli
+21	21	Diyarbakır
+22	22	Edirne
+23	23	Elazığ
+24	24	Erzincan
+25	25	Erzurum
+26	26	Eskişehir
+27	27	Gaziantep
+28	28	Giresun
+29	29	Gümüşhane
+30	30	Hakkari
+31	31	Hatay
+32	32	Isparta
+33	33	Mersin
+34	34	İstanbul
+35	35	İzmir
+36	36	Kars
+37	37	Kastamonu
+38	38	Kayseri
+39	39	Kırklareli
+40	40	Kırşehir
+41	41	Kocaeli
+42	42	Konya
+43	43	Kütahya
+44	44	Malatya
+45	45	Manisa
+46	46	Kahramanmaraş
+47	47	Mardin
+48	48	Muğla
+49	49	Muş
+50	50	Nevşehir
+51	51	Niğde
+52	52	Ordu
+53	53	Rize
+54	54	Sakarya
+55	55	Samsun
+56	56	Siirt
+57	57	Sinop
+58	58	Sivas
+59	59	Tekirdağ
+60	60	Tokat
+61	61	Trabzon
+62	62	Tunceli
+63	63	Şanlıurfa
+64	64	Uşak
+65	65	Van
+66	66	Yozgat
+67	67	Zonguldak
+68	68	Aksaray
+69	69	Bayburt
+70	70	Karaman
+71	71	Kırıkkale
+72	72	Batman
+73	73	Şırnak
+74	74	Bartın
+75	75	Ardahan
+76	76	Iğdır
+77	77	Yalova
+78	78	Karabük
+79	79	Kilis
+80	80	Osmaniye
+81	81	Düzce
+\.
+
+
+--
+-- TOC entry 3485 (class 0 OID 16532)
+-- Dependencies: 222
+-- Data for Name: seviyeadlari; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.seviyeadlari (seviyeid, seviyead) FROM stdin;
+0	Seviyesiz Uye
+1	Çaylak Üye
+2	Middle Üye
+3	Platinium Üye
+\.
+
+
+--
+-- TOC entry 3486 (class 0 OID 16537)
+-- Dependencies: 223
+-- Data for Name: seviyediscount; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.seviyediscount (id, seviyedisc, seviyeid) FROM stdin;
+0	0	0
+1	5	1
+2	15	2
+3	30	3
+\.
+
+
+--
+-- TOC entry 3497 (class 0 OID 16788)
+-- Dependencies: 234
+-- Data for Name: seviyeli_uyeler; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.seviyeli_uyeler (id, kullanici_id, kullaniciadi, seviyeid, yetki_id) FROM stdin;
+6	33	mehmet1	2	0
+7	34	cihat01	1	0
+8	35	ayse54	2	0
+11	38	ahmet01	1	0
+12	39	halill	2	0
+13	40	kalite01	2	0
+14	41	ozdmr	3	0
+15	42	geyvee	0	0
+10	37	mirac55	2	0
+16	43	aysee	0	0
+20	47	tomris	2	0
+9	36	myakn55	3	0
+\.
+
+
+--
+-- TOC entry 3488 (class 0 OID 16560)
+-- Dependencies: 225
+-- Data for Name: siparis_list; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.siparis_list (id, secilenyemek, kullanicis, toplam, odemebicimi, tamamlanma, siparisialan) FROM stdin;
+30	{3,6,2,1}	34	209.579500579834	2	0	0
+33	{10,1,2,5,6,7}	42	332.8599853515625	1	1	4
+32	{2,7,3,1,6,7}	33	281.4434875488281	1	1	4
+31	{2,7,1,10}	35	255.73098754882812	2	1	4
+34	{4,6,5}	36	32.9	1	1	4
+36	{7,6,5,5,5}	36	77.175	2	0	0
+37	{1,2,6,4,2,6}	36	224.74900512695314	2	0	0
+35	{3,2,6,7}	36	126.497	3	2	5
+\.
+
+
+--
+-- TOC entry 3489 (class 0 OID 16568)
+-- Dependencies: 226
+-- Data for Name: siparis_tamamlandimi; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.siparis_tamamlandimi (id, durum) FROM stdin;
+0	Tamamlanmadı
+1	Tamamlandı
+2	İade
+\.
+
+
+--
+-- TOC entry 3477 (class 0 OID 16448)
+-- Dependencies: 214
+-- Data for Name: uye_list; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.uye_list (id, ad, soyad, sehirid, ilceid, kullaniciad, sifre, adres, seviyeid, yetki_id) FROM stdin;
+33	Mehmet	Işıtan	55	738	mehmet1	123	Atakum sahil kenarı	2	0
+34	Cihat	Uludağ	55	743	cihat01	123	Havza ladik arası herhangi bir yerdeyim	1	0
+35	Ayşe	Bulur	54	721	ayse54	123	Siz Beni aramayın ben sizi bulurum	2	0
+38	Ahmet	Büyük	1	1	ahmet01	123	Adana'da kime sorsan gösterir	1	0
+39	Halil	İbrahim	54	724	halill	123	Buyurun Dostlar Buyurun.	2	0
+40	Mustafa	Kalite	55	746	kalite01	123	Ladik taraflarındayım	2	0
+41	Halil	Özdemir	1	1	ozdmr	123	Aladağ taraflarındayız	3	0
+42	Geyveli	Çılgın	54	724	geyvee	geyvekalpben	Bize her yer geyve	0	0
+37	Miraç	Küçük	54	722	mirac55	123	Terme çay mahallesi dumlupınar caddesi	2	0
+43	Ayşe	Canseli	54	723	aysee	ayse01	Ferizlide kime sorsan gösterir	0	0
+47	Tomris	Uyar	54	719	tomris	tomris	Edebiyatçılar çarşısı no 5	2	0
+36	Mustafa	Yakın	55	749	myakn55	123	Terme çay mahallesi dumlupınar caddesi	3	0
+\.
+
+
+--
+-- TOC entry 3483 (class 0 OID 16516)
+-- Dependencies: 220
+-- Data for Name: yemek_kategori; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.yemek_kategori (id, yemek_id, kategori_id) FROM stdin;
+5	5	3
+6	6	2
+2	2	1
+1	1	1
+3	3	3
+4	4	3
+7	7	2
+10	10	1
+15	15	1
+\.
+
+
+--
+-- TOC entry 3484 (class 0 OID 16521)
+-- Dependencies: 221
+-- Data for Name: yemek_kategoriad; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.yemek_kategoriad (id, adi) FROM stdin;
+1	Yemek
+3	İçecek
+2	Tatlı
+\.
+
+
+--
+-- TOC entry 3482 (class 0 OID 16511)
+-- Dependencies: 219
+-- Data for Name: yemek_list; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.yemek_list (id, yemekad, yemek_kat, tutar) FROM stdin;
+5	Saydam Kola	3	11.5
+6	Brownie	2	20.5
+2	Sucuk Sever	1	84.96
+1	Bol Malzemos	1	95.15
+3	Siyah Kola	3	20
+4	Sarı Kola	3	15
+7	Sütlaç	2	55.25
+10	Kaşarlı Pizza	1	65.5
+15	Ekledene	1	111.55
+\.
+
+
+--
+-- TOC entry 3496 (class 0 OID 16669)
+-- Dependencies: 233
+-- Data for Name: yemekfiyatdegisikligi; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.yemekfiyatdegisikligi (kayitno, urunno, eskifiyat, yenifiyat, degisiklik_tarih) FROM stdin;
+1	3	15.5	20	2022-12-22 21:34:15.291275
+2	4	13	15	2022-12-22 21:44:18.566084
+3	7	45.23	55.25	2022-12-22 21:44:41.61373
+4	11	12.25	14.25	2022-12-25 15:28:30.197037
+5	15	111.24	111.55	2022-12-25 16:20:56.490126
+\.
+
+
+--
+-- TOC entry 3492 (class 0 OID 16580)
+-- Dependencies: 229
+-- Data for Name: yorum_durumlari; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.yorum_durumlari (id, durum) FROM stdin;
+0	Okunmadı
+1	Okundu
+2	Cevaplandı
+\.
+
+
+--
+-- TOC entry 3491 (class 0 OID 16574)
+-- Dependencies: 228
+-- Data for Name: yorumlar; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.yorumlar (id, yorum, yildiz, siparis_id, siparis_durum, yorum_durum, cevap, kullanici_id) FROM stdin;
+22	SİPARİŞİM BİR TIK SOĞUK GELDİ!!	1	33	1	2	Biz Gönderirken Sıcaktı Gelirken Soğumuştur.	42
+23	Siparişimde Kıl Vardı Sizin Gibi Nezih Bir İşletmeye Yakıştıramadım!!	2	32	1	2	Ustamızı Sürekli Uyarıyoruz Bir Türlü Kolluk Taktıramadık. Ustamızın Adresini Mail Olarak atıyoruz.	33
+24	Siparişimde Kola Vardı Parasını da vermiştim ama kola gelmedi ??	3	31	1	2	Paketçi Arkadaşımızın İçi Yanmış Hayatta Kalmak İçin İçmiş. Onun Adına Özür Dileriz.	35
+25	Pizza Un Kokuyordu Onun Dışında Sıkıntı Yok	4	34	1	0	\N	36
+\.
+
+
+--
+-- TOC entry 3507 (class 0 OID 0)
+-- Dependencies: 236
+-- Name: calisan_list_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.calisan_list_id_seq', 6, true);
+
+
+--
+-- TOC entry 3508 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: seviyeli_uyeler_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.seviyeli_uyeler_id_seq', 20, true);
+
+
+--
+-- TOC entry 3509 (class 0 OID 0)
+-- Dependencies: 224
+-- Name: siparis_list_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.siparis_list_id_seq', 38, true);
+
+
+--
+-- TOC entry 3510 (class 0 OID 0)
+-- Dependencies: 215
+-- Name: uye_list_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.uye_list_id_seq', 47, true);
+
+
+--
+-- TOC entry 3511 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: yemek_kategori_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.yemek_kategori_id_seq', 16, true);
+
+
+--
+-- TOC entry 3512 (class 0 OID 0)
+-- Dependencies: 218
+-- Name: yemek_list_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.yemek_list_id_seq', 16, true);
+
+
+--
+-- TOC entry 3513 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: yemekfiyatdegisikligi_kayitno_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.yemekfiyatdegisikligi_kayitno_seq', 5, true);
+
+
+--
+-- TOC entry 3514 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: yorumlar_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.yorumlar_id_seq', 25, true);
+
+
+--
+-- TOC entry 3310 (class 2606 OID 16674)
+-- Name: yemekfiyatdegisikligi PK; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yemekfiyatdegisikligi
+    ADD CONSTRAINT "PK" PRIMARY KEY (kayitno);
+
+
+--
+-- TOC entry 3314 (class 2606 OID 16800)
+-- Name: calisan_list calisan_list_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.calisan_list
+    ADD CONSTRAINT calisan_list_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3308 (class 2606 OID 16659)
+-- Name: calisan_yetki_adlari calisan_yetki_adlari_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.calisan_yetki_adlari
+    ADD CONSTRAINT calisan_yetki_adlari_pkey PRIMARY KEY (yetki_id);
+
+
+--
+-- TOC entry 3276 (class 2606 OID 16497)
+-- Name: ilceler ilceler_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ilceler
+    ADD CONSTRAINT ilceler_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3273 (class 2606 OID 16492)
+-- Name: sehirler sehirler_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sehirler
+    ADD CONSTRAINT sehirler_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3288 (class 2606 OID 16536)
+-- Name: seviyeadlari seviyeadlari_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.seviyeadlari
+    ADD CONSTRAINT seviyeadlari_pkey PRIMARY KEY (seviyeid);
+
+
+--
+-- TOC entry 3290 (class 2606 OID 16541)
+-- Name: seviyediscount seviyediscount_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.seviyediscount
+    ADD CONSTRAINT seviyediscount_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3312 (class 2606 OID 16792)
+-- Name: seviyeli_uyeler seviyeli_uyeler_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.seviyeli_uyeler
+    ADD CONSTRAINT seviyeli_uyeler_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3296 (class 2606 OID 16566)
+-- Name: siparis_list siparis_list_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.siparis_list
+    ADD CONSTRAINT siparis_list_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3298 (class 2606 OID 16572)
+-- Name: siparis_tamamlandimi siparis_tamamlandimi_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.siparis_tamamlandimi
+    ADD CONSTRAINT siparis_tamamlandimi_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3271 (class 2606 OID 16456)
+-- Name: uye_list uye_list_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.uye_list
+    ADD CONSTRAINT uye_list_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3286 (class 2606 OID 16525)
+-- Name: yemek_kategoriad yemek_kategoriAd_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yemek_kategoriad
+    ADD CONSTRAINT "yemek_kategoriAd_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3284 (class 2606 OID 16520)
+-- Name: yemek_kategori yemek_kategori_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yemek_kategori
+    ADD CONSTRAINT yemek_kategori_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3280 (class 2606 OID 16515)
+-- Name: yemek_list yemek_list_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yemek_list
+    ADD CONSTRAINT yemek_list_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3306 (class 2606 OID 16584)
+-- Name: yorum_durumlari yorum_durumlari_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yorum_durumlari
+    ADD CONSTRAINT yorum_durumlari_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3304 (class 2606 OID 16578)
+-- Name: yorumlar yorumlar_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yorumlar
+    ADD CONSTRAINT yorumlar_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3274 (class 1259 OID 16688)
+-- Name: fki_il_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_il_foreign ON public.ilceler USING btree (il_id);
+
+
+--
+-- TOC entry 3267 (class 1259 OID 16718)
+-- Name: fki_ilce_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_ilce_foreign ON public.uye_list USING btree (ilceid);
+
+
+--
+-- TOC entry 3281 (class 1259 OID 16736)
+-- Name: fki_kategorii_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_kategorii_id ON public.yemek_kategori USING btree (kategori_id);
+
+
+--
+-- TOC entry 3299 (class 1259 OID 16766)
+-- Name: fki_kullanicininid_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_kullanicininid_foreign ON public.yorumlar USING btree (kullanici_id);
+
+
+--
+-- TOC entry 3291 (class 1259 OID 16808)
+-- Name: fki_s; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_s ON public.siparis_list USING btree (kullanicis);
+
+
+--
+-- TOC entry 3268 (class 1259 OID 16712)
+-- Name: fki_sehir_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_sehir_foreign ON public.uye_list USING btree (sehirid);
+
+
+--
+-- TOC entry 3269 (class 1259 OID 16724)
+-- Name: fki_seviyes_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_seviyes_foreign ON public.uye_list USING btree (seviyeid);
+
+
+--
+-- TOC entry 3300 (class 1259 OID 16748)
+-- Name: fki_sipariid_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_sipariid_foreign ON public.yorumlar USING btree (siparis_id);
+
+
+--
+-- TOC entry 3292 (class 1259 OID 16700)
+-- Name: fki_siparisalan_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_siparisalan_foreign ON public.siparis_list USING btree (siparisialan);
+
+
+--
+-- TOC entry 3301 (class 1259 OID 16754)
+-- Name: fki_siparisdurum_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_siparisdurum_foreign ON public.yorumlar USING btree (siparis_durum);
+
+
+--
+-- TOC entry 3293 (class 1259 OID 16814)
+-- Name: fki_siparisialan_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_siparisialan_foreign ON public.siparis_list USING btree (siparisialan);
+
+
+--
+-- TOC entry 3294 (class 1259 OID 16706)
+-- Name: fki_siparistamamlan_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_siparistamamlan_foreign ON public.siparis_list USING btree (tamamlanma);
+
+
+--
+-- TOC entry 3277 (class 1259 OID 16742)
+-- Name: fki_yemek_kat; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_yemek_kat ON public.yemek_list USING btree (yemek_kat);
+
+
+--
+-- TOC entry 3278 (class 1259 OID 16531)
+-- Name: fki_yemek_kategoriadi; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_yemek_kategoriadi ON public.yemek_list USING btree (yemek_kat);
+
+
+--
+-- TOC entry 3282 (class 1259 OID 16730)
+-- Name: fki_yemekid_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_yemekid_foreign ON public.yemek_kategori USING btree (yemek_id);
+
+
+--
+-- TOC entry 3302 (class 1259 OID 16760)
+-- Name: fki_yorumdurum_foreign; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_yorumdurum_foreign ON public.yorumlar USING btree (yorum_durum);
+
+
+--
+-- TOC entry 3327 (class 2620 OID 16647)
+-- Name: uye_list deleteuyetrigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER deleteuyetrigger AFTER DELETE ON public.uye_list FOR EACH ROW EXECUTE FUNCTION public.deleteuye();
+
+
+--
+-- TOC entry 3331 (class 2620 OID 16816)
+-- Name: yemek_list deleteyemektrigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER deleteyemektrigger BEFORE DELETE ON public.yemek_list FOR EACH ROW EXECUTE FUNCTION public.deleteyemek();
+
+
+--
+-- TOC entry 3328 (class 2620 OID 16631)
+-- Name: uye_list trig_uye_ekle; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trig_uye_ekle AFTER INSERT ON public.uye_list FOR EACH ROW EXECUTE FUNCTION public.seviyeli_uye_ekleme();
+
+
+--
+-- TOC entry 3332 (class 2620 OID 16664)
+-- Name: yemek_list trig_yemek_ekle; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trig_yemek_ekle AFTER INSERT ON public.yemek_list FOR EACH ROW EXECUTE FUNCTION public.yemek_ekleme();
+
+
+--
+-- TOC entry 3329 (class 2620 OID 16649)
+-- Name: uye_list uyekaditrigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER uyekaditrigger AFTER UPDATE ON public.uye_list FOR EACH ROW EXECUTE FUNCTION public.uyekadidegis();
+
+
+--
+-- TOC entry 3330 (class 2620 OID 16639)
+-- Name: uye_list uyeseviyetrigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER uyeseviyetrigger AFTER UPDATE ON public.uye_list FOR EACH ROW EXECUTE FUNCTION public.uyeseviyedegis();
+
+
+--
+-- TOC entry 3333 (class 2620 OID 16676)
+-- Name: yemek_list yemekfiyatdegistigindetrigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER yemekfiyatdegistigindetrigger BEFORE UPDATE ON public.yemek_list FOR EACH ROW EXECUTE FUNCTION public.yemekfiyatdegisikligi();
+
+
+--
+-- TOC entry 3334 (class 2620 OID 16662)
+-- Name: yemek_list yemekkattrigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER yemekkattrigger AFTER UPDATE ON public.yemek_list FOR EACH ROW EXECUTE FUNCTION public.yemekkatdegis();
+
+
+--
+-- TOC entry 3318 (class 2606 OID 16683)
+-- Name: ilceler il_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ilceler
+    ADD CONSTRAINT il_foreign FOREIGN KEY (il_id) REFERENCES public.sehirler(id) NOT VALID;
+
+
+--
+-- TOC entry 3315 (class 2606 OID 16713)
+-- Name: uye_list ilce_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.uye_list
+    ADD CONSTRAINT ilce_foreign FOREIGN KEY (ilceid) REFERENCES public.ilceler(id) NOT VALID;
+
+
+--
+-- TOC entry 3321 (class 2606 OID 16731)
+-- Name: yemek_kategori kategorii_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yemek_kategori
+    ADD CONSTRAINT kategorii_id FOREIGN KEY (kategori_id) REFERENCES public.yemek_kategoriad(id) NOT VALID;
+
+
+--
+-- TOC entry 3316 (class 2606 OID 16707)
+-- Name: uye_list sehir_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.uye_list
+    ADD CONSTRAINT sehir_foreign FOREIGN KEY (sehirid) REFERENCES public.sehirler(id) NOT VALID;
+
+
+--
+-- TOC entry 3317 (class 2606 OID 16719)
+-- Name: uye_list seviyes_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.uye_list
+    ADD CONSTRAINT seviyes_foreign FOREIGN KEY (seviyeid) REFERENCES public.seviyeadlari(seviyeid) NOT VALID;
+
+
+--
+-- TOC entry 3324 (class 2606 OID 16743)
+-- Name: yorumlar sipariid_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yorumlar
+    ADD CONSTRAINT sipariid_foreign FOREIGN KEY (siparis_id) REFERENCES public.siparis_list(id) NOT VALID;
+
+
+--
+-- TOC entry 3325 (class 2606 OID 16749)
+-- Name: yorumlar siparisdurum_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yorumlar
+    ADD CONSTRAINT siparisdurum_foreign FOREIGN KEY (siparis_durum) REFERENCES public.siparis_tamamlandimi(id) NOT VALID;
+
+
+--
+-- TOC entry 3323 (class 2606 OID 16701)
+-- Name: siparis_list siparistamamlan_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.siparis_list
+    ADD CONSTRAINT siparistamamlan_foreign FOREIGN KEY (tamamlanma) REFERENCES public.siparis_tamamlandimi(id) NOT VALID;
+
+
+--
+-- TOC entry 3319 (class 2606 OID 16737)
+-- Name: yemek_list yemek_kat; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yemek_list
+    ADD CONSTRAINT yemek_kat FOREIGN KEY (yemek_kat) REFERENCES public.yemek_kategoriad(id) NOT VALID;
+
+
+--
+-- TOC entry 3320 (class 2606 OID 16526)
+-- Name: yemek_list yemek_list_yemek_kat_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yemek_list
+    ADD CONSTRAINT yemek_list_yemek_kat_fkey FOREIGN KEY (yemek_kat) REFERENCES public.yemek_kategoriad(id) NOT VALID;
+
+
+--
+-- TOC entry 3322 (class 2606 OID 16725)
+-- Name: yemek_kategori yemekid_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yemek_kategori
+    ADD CONSTRAINT yemekid_foreign FOREIGN KEY (yemek_id) REFERENCES public.yemek_list(id) NOT VALID;
+
+
+--
+-- TOC entry 3326 (class 2606 OID 16755)
+-- Name: yorumlar yorumdurum_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.yorumlar
+    ADD CONSTRAINT yorumdurum_foreign FOREIGN KEY (yorum_durum) REFERENCES public.yorum_durumlari(id) NOT VALID;
+
+
+-- Completed on 2022-12-28 01:42:18
+
+--
+-- PostgreSQL database dump complete
+--
+
